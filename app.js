@@ -26,14 +26,27 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Configuración de sesiones
+const isProduction =
+    process.env.NODE_ENV === 'production';
+
+if (isProduction) {
+    app.set('trust proxy', 1);
+}
+
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'moveshare_secret_key_dev',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: false, // true en producción con HTTPS
-    maxAge: 1000 * 60 * 60 * 24, // 24 horas
-  },
+    secret:
+        process.env.SESSION_SECRET ||
+        'moveshare_secret_key_dev',
+
+    resave: false,
+    saveUninitialized: false,
+
+    cookie: {
+        secure: isProduction,
+        httpOnly: true,
+        sameSite: 'lax',
+        maxAge: 1000 * 60 * 60 * 24
+    }
 }));
 
 // ─────────────────────────────────────────────────────────────
