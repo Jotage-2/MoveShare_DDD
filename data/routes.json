@@ -1,1 +1,21 @@
-[]
+[
+  {
+    "id": 1783817429525,
+    "driverId": "7db01cbc-41c6-43fa-9fff-21752b860ea3",
+    "origin": "Arequipa Avenue, Lince, Province of Lima, Lima Metropolitan Area, Lima, 15046, Peru",
+    "originCoords": [
+      -12.080619,
+      -77.0351337
+    ],
+    "dest": "Universidad Peruana de Ciencias Aplicadas, Avenida Primavera, Parque Primavera, Monterrico, Santiago de Surco, Province of Lima, Lima Metropolitan Area, Lima, 15023, Peru",
+    "destCoords": [
+      -12.1040315,
+      -76.9629746
+    ],
+    "seats": 2,
+    "time": "19:55",
+    "notes": "",
+    "expiresAtTimestamp": 1783817700000,
+    "createdAt": "2026-07-12T00:50:29.525Z"
+  }
+]

@@ -44,17 +44,21 @@ function createAuthController(useCases) {
             }
         },
 
-        verifyCode: (req, res) => {
+        verifyCode: async (req, res) => {
             try {
-                useCases.verify.execute(req.body);
+                await useCases.verify.execute(req.body);
 
                 return res.status(200).json({
                     success: true,
                     message:
                         '¡Cuenta verificada exitosamente! Ya puedes iniciar sesión.'
                 });
-            } catch (e) {
-                return handle(res, e, 'verifyCode');
+            } catch (error) {
+                return handle(
+                    res,
+                    error,
+                    'verifyCode'
+                );
             }
         },
 

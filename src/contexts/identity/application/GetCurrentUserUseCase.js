@@ -1,23 +1,31 @@
 const AppError = require('../../../shared/domain/AppError');
 
 class GetCurrentUserUseCase {
-  constructor(userRepository) {
-    this.userRepository = userRepository;
-  }
-
-  execute(userId) {
-    if (!userId) {
-      throw new AppError('No autenticado.', 401);
+    constructor(userRepository) {
+        this.userRepository = userRepository;
     }
 
-    const user = this.userRepository.findById(userId);
+    async execute(userId) {
+        if (!userId) {
+            throw new AppError(
+                'No autenticado.',
+                401
+            );
+        }
 
-    if (!user) {
-      throw new AppError('Usuario no encontrado.', 404);
+        const user = await this.userRepository.findById(
+            userId
+        );
+
+        if (!user) {
+            throw new AppError(
+                'Usuario no encontrado.',
+                404
+            );
+        }
+
+        return user;
     }
-
-    return user;
-  }
 }
 
 module.exports = GetCurrentUserUseCase;

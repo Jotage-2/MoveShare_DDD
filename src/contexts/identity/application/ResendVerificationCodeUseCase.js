@@ -21,9 +21,13 @@ class ResendVerificationCodeUseCase {
             );
         }
 
-        const normalized = email.toLowerCase().trim();
+        const normalizedEmail = email
+            .toLowerCase()
+            .trim();
 
-        const user = this.userRepository.findByEmail(normalized);
+        const user = await this.userRepository.findByEmail(
+            normalizedEmail
+        );
 
         if (!user) {
             throw new AppError(
@@ -43,7 +47,7 @@ class ResendVerificationCodeUseCase {
             100000 + Math.random() * 900000
         ).toString();
 
-        this.verificationStore[normalized] = {
+        this.verificationStore[normalizedEmail] = {
             code,
             expiresAt: Date.now() + 15 * 60 * 1000,
             userId: user.id
@@ -51,7 +55,7 @@ class ResendVerificationCodeUseCase {
 
         const emailSent =
             await this.sendVerificationEmailUseCase.execute({
-                email: normalized,
+                email: normalizedEmail,
                 firstName: user.firstName,
                 code
             });

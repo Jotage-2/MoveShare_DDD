@@ -9,8 +9,9 @@ const express = require('express');
 // Infrastructure
 // ======================================================
 
-const JsonUserRepository = require('../infrastructure/JsonUserRepository');
-
+const PostgresUserRepository = require(
+    '../infrastructure/PostgresUserRepository'
+);
 const NodemailerEmailService = require(
     '../../notifications/infrastructure/NodemailerEmailService'
 );
@@ -64,7 +65,7 @@ const router = express.Router();
 // ======================================================
 
 // Repositorio de usuarios (JSON)
-const repository = new JsonUserRepository();
+const repository = new PostgresUserRepository();
 
 // Almacén temporal de códigos de verificación
 const verificationStore = {};

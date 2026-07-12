@@ -8,7 +8,7 @@ class VerifyUserUseCase {
         });
     }
 
-    execute({ email, code } = {}) {
+    async execute({ email, code } = {}) {
         if (!email || !code) {
             throw new AppError(
                 'Correo y código son requeridos.',
@@ -16,9 +16,12 @@ class VerifyUserUseCase {
             );
         }
 
-        const normalized = email.toLowerCase().trim();
+        const normalizedEmail = email
+            .toLowerCase()
+            .trim();
 
-        const pending = this.verificationStore[normalized];
+        const pending =
+            this.verificationStore[normalizedEmail];
 
         if (!pending) {
             throw new AppError(
@@ -28,7 +31,7 @@ class VerifyUserUseCase {
         }
 
         if (Date.now() > pending.expiresAt) {
-            delete this.verificationStore[normalized];
+            delete this.verificationStore[normalizedEmail];
 
             throw new AppError(
                 'El código ha expirado. Por favor regístrate nuevamente.',
@@ -43,11 +46,14 @@ class VerifyUserUseCase {
             );
         }
 
-        this.userRepository.update(pending.userId, {
-            verified: true
-        });
+        await this.userRepository.update(
+            pending.userId,
+            {
+                verified: true
+            }
+        );
 
-        delete this.verificationStore[normalized];
+        delete this.verificationStore[normalizedEmail];
     }
 }
 

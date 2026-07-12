@@ -8,17 +8,16 @@
     "dev": "nodemon --ignore data/ app.js"
   },
   "dependencies": {
-    "body-parser": "^1.20.2",
     "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.2",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-session": "^1.17.3",
     "nodemailer": "^6.9.7",
+    "pg": "^8.22.0",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
   }
-  
-  
 }

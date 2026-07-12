@@ -1,11 +1,5 @@
-// ======================================================
-// Controller
-// ======================================================
-
 function createRouteController(useCases) {
-
     const fail = (res, error, message) => {
-
         console.error(message, error);
 
         return res.status(error.statusCode || 500).json({
@@ -16,125 +10,83 @@ function createRouteController(useCases) {
     };
 
     return {
-
-        // ======================================================
-        // Obtener rutas disponibles
-        // ======================================================
-
-        getAllRoutes: (req, res) => {
-
+        getAllRoutes: async (req, res) => {
             try {
+                const routes =
+                    await useCases.available.execute();
 
-                return res.status(200).json(
-                    useCases.available.execute()
-                );
-
+                return res.status(200).json(routes);
             } catch (error) {
-
                 return fail(
                     res,
                     error,
                     'Hubo un problema al obtener las rutas'
                 );
-
             }
         },
 
-
-        // ======================================================
-        // Publicar una nueva ruta
-        // ======================================================
-
-        publishRoute: (req, res) => {
-
+        publishRoute: async (req, res) => {
             try {
-
-                const route = useCases.publish.execute(
-                    req.body,
-                    req.session?.userId || null
-                );
+                const route =
+                    await useCases.publish.execute(
+                        req.body,
+                        req.session?.userId || null
+                    );
 
                 return res.status(201).json({
                     message: 'Ruta publicada correctamente',
                     route
                 });
-
             } catch (error) {
-
                 return fail(
                     res,
                     error,
                     'Hubo un problema al publicar la ruta.'
                 );
-
             }
         },
 
-
-        // ======================================================
-        // Unirse a una ruta
-        // ======================================================
-
-        joinRoute: (req, res) => {
-
+        joinRoute: async (req, res) => {
             try {
-
-                const result = useCases.join.execute(
-                    req.body?.routeId
-                );
+                const result =
+                    await useCases.join.execute(
+                        req.body?.routeId
+                    );
 
                 return res.status(200).json({
-                    message: '¡Te has unido a la ruta con éxito!',
+                    message:
+                        '¡Te has unido a la ruta con éxito!',
                     ...result
                 });
-
             } catch (error) {
-
                 return fail(
                     res,
                     error,
                     'Hubo un problema al unirse a la ruta.'
                 );
-
             }
         },
 
-
-        // ======================================================
-        // Obtener mis rutas publicadas
-        // ======================================================
-
-        getMyPublishedRoutes: (req, res) => {
-
+        getMyPublishedRoutes: async (req, res) => {
             try {
-
-                return res.status(200).json(
-                    useCases.mine.execute(
+                const routes =
+                    await useCases.mine.execute(
                         req.session?.userId || null
-                    )
-                );
+                    );
 
+                return res.status(200).json(routes);
             } catch (error) {
-
                 return fail(
                     res,
                     error,
                     'Hubo un problema al obtener tus rutas publicadas.'
                 );
-
             }
         },
 
-
-        // ======================================================
-        // Cancelar una ruta publicada
-        // ======================================================
-
-        cancelPublishedRoute: (req, res) => {
-
+        cancelPublishedRoute: async (req, res) => {
             try {
-
-                useCases.cancel.execute(
+                await useCases.cancel.execute(
                     req.params.routeId,
                     req.session?.userId || null
                 );
@@ -142,24 +94,15 @@ function createRouteController(useCases) {
                 return res.status(200).json({
                     message: 'Ruta cancelada correctamente.'
                 });
-
             } catch (error) {
-
                 return fail(
                     res,
                     error,
                     'Hubo un problema al cancelar la ruta.'
                 );
-
             }
         }
-
     };
 }
-
-
-// ======================================================
-// Export
-// ======================================================
 
 module.exports = createRouteController;

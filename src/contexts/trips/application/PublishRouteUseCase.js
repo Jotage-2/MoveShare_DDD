@@ -1,23 +1,12 @@
-// ======================================================
-// Dependencies
-// ======================================================
-
 const AppError = require('../../../shared/domain/AppError');
 const Route = require('../domain/Route');
 
-
-// ======================================================
-// Class
-// ======================================================
-
 class PublishRouteUseCase {
-
     constructor(repository) {
         this.repository = repository;
     }
 
-    execute(body = {}, driverId = null) {
-
+    async execute(body = {}, driverId = null) {
         const origin = String(body.origin || '').trim();
         const dest = String(body.dest || '').trim();
         const time = String(body.time || '').trim();
@@ -74,8 +63,7 @@ class PublishRouteUseCase {
             );
         }
 
-        const coords = (value, label) => {
-
+        const validateCoordinates = (value, label) => {
             if (
                 !Array.isArray(value) ||
                 value.length !== 2
@@ -86,16 +74,16 @@ class PublishRouteUseCase {
                 );
             }
 
-            const lat = Number(value[0]);
-            const lng = Number(value[1]);
+            const latitude = Number(value[0]);
+            const longitude = Number(value[1]);
 
             if (
-                !Number.isFinite(lat) ||
-                !Number.isFinite(lng) ||
-                lat < -90 ||
-                lat > 90 ||
-                lng < -180 ||
-                lng > 180
+                !Number.isFinite(latitude) ||
+                !Number.isFinite(longitude) ||
+                latitude < -90 ||
+                latitude > 90 ||
+                longitude < -180 ||
+                longitude > 180
             ) {
                 throw new AppError(
                     `Las coordenadas del ${label} no son válidas.`,
@@ -103,17 +91,34 @@ class PublishRouteUseCase {
                 );
             }
 
-            return [lat, lng];
+            return [
+                latitude,
+                longitude
+            ];
         };
 
-        const o = coords(originCoords, 'origen');
-        const d = coords(destCoords, 'destino');
+        const normalizedOriginCoords = validateCoordinates(
+            originCoords,
+            'origen'
+        );
 
-        const [h, m] = time.split(':').map(Number);
+        const normalizedDestCoords = validateCoordinates(
+            destCoords,
+            'destino'
+        );
+
+        const [hours, minutes] = time
+            .split(':')
+            .map(Number);
 
         const expiresAt = new Date();
 
-        expiresAt.setHours(h, m, 0, 0);
+        expiresAt.setHours(
+            hours,
+            minutes,
+            0,
+            0
+        );
 
         if (expiresAt.getTime() <= Date.now()) {
             throw new AppError(
@@ -126,9 +131,9 @@ class PublishRouteUseCase {
             id: Date.now(),
             driverId: driverId || null,
             origin,
-            originCoords: o,
+            originCoords: normalizedOriginCoords,
             dest,
-            destCoords: d,
+            destCoords: normalizedDestCoords,
             seats,
             time,
             notes,
@@ -136,19 +141,8 @@ class PublishRouteUseCase {
             createdAt: new Date().toISOString()
         });
 
-        const routes = this.repository.findAll();
-
-        routes.unshift(route.toJSON());
-
-        this.repository.saveAll(routes);
-
-        return route.toJSON();
+        return await this.repository.create(route);
     }
 }
-
-
-// ======================================================
-// Export
-// ======================================================
 
 module.exports = PublishRouteUseCase;

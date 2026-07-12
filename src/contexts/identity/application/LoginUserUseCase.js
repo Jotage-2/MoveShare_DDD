@@ -15,12 +15,22 @@ class LoginUserUseCase {
             );
         }
 
-        const user = this.userRepository.findByEmail(email);
+        const normalizedEmail = email
+            .toLowerCase()
+            .trim();
 
-        if (
-            !user ||
-            !(await bcrypt.compare(password, user.password))
-        ) {
+        const user = await this.userRepository.findByEmail(
+            normalizedEmail
+        );
+
+        const passwordIsValid =
+            user &&
+            await bcrypt.compare(
+                password,
+                user.password
+            );
+
+        if (!passwordIsValid) {
             throw new AppError(
                 'Correo o contraseña incorrectos.',
                 401

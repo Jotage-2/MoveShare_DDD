@@ -8,9 +8,12 @@ const express = require('express');
 // ======================================================
 // Infrastructure
 // ======================================================
+const {
+    requireAuth
+} = require('../../../shared/middleware/authMiddleware');
 
-const JsonRouteRepository = require(
-    '../infrastructure/JsonRouteRepository'
+const PostgresRouteRepository = require(
+    '../infrastructure/PostgresRouteRepository'
 );
 
 
@@ -60,8 +63,7 @@ const router = express.Router();
 // ======================================================
 
 // Repositorio de rutas (JSON)
-const repository = new JsonRouteRepository();
-
+const repository = new PostgresRouteRepository();
 
 // ======================================================
 // Controller
@@ -96,22 +98,34 @@ const controller = createRouteController({
 // Routes
 // ======================================================
 
-// Obtener todas las rutas disponibles
-router.get('/', controller.getAllRoutes);
+router.get(
+    '/',
+    controller.getAllRoutes
+);
 
-// Publicar una nueva ruta
-router.post('/', controller.publishRoute);
+router.post(
+    '/',
+    requireAuth,
+    controller.publishRoute
+);
 
-// Unirse a una ruta
-router.post('/join', controller.joinRoute);
+router.post(
+    '/join',
+    requireAuth,
+    controller.joinRoute
+);
 
-// Cancelar una ruta publicada
-router.delete('/:routeId', controller.cancelPublishedRoute);
+router.get(
+    '/mine',
+    requireAuth,
+    controller.getMyPublishedRoutes
+);
 
-// Obtener las rutas publicadas por el conductor autenticado
-router.get('/mine', controller.getMyPublishedRoutes);
-
-
+router.delete(
+    '/:routeId',
+    requireAuth,
+    controller.cancelPublishedRoute
+);
 // ======================================================
 // Export
 // ======================================================

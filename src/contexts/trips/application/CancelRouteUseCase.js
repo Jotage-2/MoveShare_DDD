@@ -1,45 +1,30 @@
-// ======================================================
-// Dependencies
-// ======================================================
-
 const AppError = require('../../../shared/domain/AppError');
 
-
-// ======================================================
-// Class
-// ======================================================
-
 class CancelRouteUseCase {
-
     constructor(repository) {
         this.repository = repository;
     }
 
-    execute(routeId, userId) {
+    async execute(routeId, userId) {
+        const normalizedRouteId = String(routeId || '').trim();
 
-        routeId = String(routeId || '').trim();
-
-        if (!routeId) {
+        if (!normalizedRouteId) {
             throw new AppError(
                 'No se recibió el ID de la ruta.',
                 400
             );
         }
 
-        const routes = this.repository.findAll();
-
-        const index = routes.findIndex(
-            (route) => String(route.id) === routeId
+        const route = await this.repository.findById(
+            normalizedRouteId
         );
 
-        if (index < 0) {
+        if (!route) {
             throw new AppError(
                 'La ruta ya no existe o ya fue cancelada.',
                 404
             );
         }
-
-        const route = routes[index];
 
         if (
             route.driverId &&
@@ -52,15 +37,10 @@ class CancelRouteUseCase {
             );
         }
 
-        routes.splice(index, 1);
-
-        this.repository.saveAll(routes);
+        await this.repository.deleteById(
+            normalizedRouteId
+        );
     }
 }
-
-
-// ======================================================
-// Export
-// ======================================================
 
 module.exports = CancelRouteUseCase;

@@ -26,7 +26,13 @@ class RegisterUserUseCase {
             password
         } = input || {};
 
-        if (!firstName || !lastName || !email || !dni || !password) {
+        if (
+            !firstName ||
+            !lastName ||
+            !email ||
+            !dni ||
+            !password
+        ) {
             throw new AppError(
                 'Todos los campos son obligatorios.',
                 400
@@ -56,7 +62,10 @@ class RegisterUserUseCase {
 
         email = email.toLowerCase().trim();
 
-        if (this.userRepository.findByEmail(email)) {
+        const existingUser =
+            await this.userRepository.findByEmail(email);
+
+        if (existingUser) {
             throw new AppError(
                 'Ya existe una cuenta con ese correo electrónico.',
                 409
@@ -74,7 +83,7 @@ class RegisterUserUseCase {
             createdAt: new Date().toISOString()
         });
 
-        this.userRepository.create(user);
+        await this.userRepository.create(user);
 
         const code = Math.floor(
             100000 + Math.random() * 900000

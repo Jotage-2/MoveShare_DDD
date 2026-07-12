@@ -1,45 +1,30 @@
-// ======================================================
-// Dependencies
-// ======================================================
-
 const AppError = require('../../../shared/domain/AppError');
 
-
-// ======================================================
-// Class
-// ======================================================
-
 class JoinRouteUseCase {
-
     constructor(repository) {
         this.repository = repository;
     }
 
-    execute(routeId) {
+    async execute(routeId) {
+        const normalizedRouteId = String(routeId ?? '').trim();
 
-        routeId = String(routeId ?? '').trim();
-
-        if (!routeId) {
+        if (!normalizedRouteId) {
             throw new AppError(
                 'No se recibió el ID de la ruta seleccionada.',
                 400
             );
         }
 
-        const routes = this.repository.findAll();
-
-        const index = routes.findIndex(
-            (route) => String(route.id) === routeId
+        const route = await this.repository.findById(
+            normalizedRouteId
         );
 
-        if (index < 0) {
+        if (!route) {
             throw new AppError(
                 'La ruta ya no está disponible o no existe.',
                 404
             );
         }
-
-        const route = routes[index];
 
         const expiration = Number(route.expiresAtTimestamp);
 
@@ -48,9 +33,9 @@ class JoinRouteUseCase {
             expiration > 0 &&
             expiration <= Date.now()
         ) {
-            routes.splice(index, 1);
-
-            this.repository.saveAll(routes);
+            await this.repository.deleteById(
+                normalizedRouteId
+            );
 
             throw new AppError(
                 'Esta ruta ya venció y fue retirada de la lista.',
@@ -64,9 +49,9 @@ class JoinRouteUseCase {
             !Number.isInteger(seats) ||
             seats <= 0
         ) {
-            routes.splice(index, 1);
-
-            this.repository.saveAll(routes);
+            await this.repository.deleteById(
+                normalizedRouteId
+            );
 
             throw new AppError(
                 'Lo sentimos, ya no quedan asientos disponibles.',
@@ -74,18 +59,25 @@ class JoinRouteUseCase {
             );
         }
 
-        const remainingSeats = seats - 1;
+        const updatedRoute =
+            await this.repository.decrementSeats(
+                normalizedRouteId
+            );
 
-        if (remainingSeats === 0) {
-            routes.splice(index, 1);
-        } else {
-            routes[index] = {
-                ...route,
-                seats: remainingSeats
-            };
+        if (!updatedRoute) {
+            throw new AppError(
+                'La ruta ya no está disponible o no tiene asientos.',
+                409
+            );
         }
 
-        this.repository.saveAll(routes);
+        const remainingSeats = Number(updatedRoute.seats);
+
+        if (remainingSeats === 0) {
+            await this.repository.deleteById(
+                normalizedRouteId
+            );
+        }
 
         return {
             remainingSeats,
@@ -93,10 +85,5 @@ class JoinRouteUseCase {
         };
     }
 }
-
-
-// ======================================================
-// Export
-// ======================================================
 
 module.exports = JoinRouteUseCase;
